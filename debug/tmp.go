@@ -56,7 +56,7 @@ func main() {
 
 	sharedSecret, err := privateKey.ECDH(publicKey)
 
-	// log.Infof("Shared Secret: %x :: %d", sharedSecret, len(sharedSecret))
+	log.Infof("Shared Secret: %x :: %d", sharedSecret, len(sharedSecret))
 
 	controllerId1, _ := hex.DecodeString("00004ca4") // (4ca4) - Set by PDM
 	controllerId2, _ := hex.DecodeString("00004ca6") // (4ca4) - Set by PDM
@@ -114,11 +114,11 @@ func testKeyDerivation(controllerId []byte, key1 []byte, key2 []byte, sharedSecr
 	hash.Write(lengthBytes) // length 6 at pos 8
 	hash.Write(sharedSecret)
 	derivedKey := hash.Sum(nil)
-	// log.Infof("DerivedKey: %x :: %d", derivedKey, len(derivedKey))
+	log.Infof("DerivedKey: %x :: %d", derivedKey, len(derivedKey))
 	confKey := derivedKey[:16]
 	ltk := derivedKey[16:]
-	// log.Infof("ConfKey: %x :: %d", confKey, len(confKey))
-	// log.Infof("LTK:     %x :: %d", ltk, len(ltk))
+	log.Infof("ConfKey: %x :: %d", confKey, len(confKey))
+	log.Infof("LTK:     %x :: %d", ltk, len(ltk))
 
 	testConfKey(confKey)
 	testConfKey(ltk)
@@ -225,7 +225,6 @@ func testCCMOpen(key []byte, tagSize int, nonce []byte) {
 		log.Infof("SUCCESS!!! r: %x :: %d", r, len(r))
 		log.Infof("dst: %x :: %d", dst, len(dst))
 	}
-
 	// for x := 223; x >= 0; x-- {
 	// 	a := receivedSPS2[:x]
 	// 	b := receivedSPS2[x:]
