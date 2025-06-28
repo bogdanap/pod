@@ -43,6 +43,7 @@ type Device interface {
 	// It tres to fit the UUIDs in the advertising packet as much as possible.
 	// If name doesn't fit in the advertising packet, it will be put in scan response.
 	AdvertiseNameAndServices(name string, ss []UUID) error
+	AdvertiseNameServicesMfgData(name string, ss []UUID, mfg []byte) error
 
 	// AdvertiseIBeaconData advertise iBeacon with given manufacturer data.
 	AdvertiseIBeaconData(b []byte) error
