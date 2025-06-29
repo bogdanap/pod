@@ -89,9 +89,9 @@ func (p *Pod) notifyStateChange() {
 
 func (p *Pod) StartAcceptingCommands() {
 	log.Infof("pkg pod; Listening for commands")
-	p.ble.StartMessageLoop()
 
 	if p.state.LTK != nil { // paired, just establish new session
+		p.ble.StartMessageLoop()
 		p.EapAka()
 	} else {
 		p.StartActivation() // not paired, get the LTK
@@ -105,6 +105,7 @@ func (p *Pod) StartActivation() {
 
 	firstCmd, _ := p.ble.ReadCmd()
 	log.Infof("pkg pod; got first command: as string: %s", firstCmd)
+	p.ble.StartMessageLoop()
 
 	// Set the unique ID
 	uniqueId := firstCmd[3:7]
