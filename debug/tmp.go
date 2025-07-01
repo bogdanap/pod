@@ -20,12 +20,12 @@ var receivedSPS2 []byte
 var firmwareId []byte
 
 func main() {
-	podPrivate, _ = hex.DecodeString("1003c1bb3324e52d23d65afee2339eb42f8f0bfc1662297d83e2cce7b6f614c5")
-	podPublic, _ = hex.DecodeString("9116807b73ff8fc4de35d43c0e37f22749216ea0a72b930ca9b1b7b216b5b5f151552422a5c4841a76620c16149265bfb6b09d45e0908ce13799906f69222d9d")
-	podNonce, _ = hex.DecodeString("157e1e1a0ea6a5382213f9af755a43c8")
-	pdmPublic, _ = hex.DecodeString("a68d482b7cac876b56b18b776f9bc66ea44e76c75597955c0617dcc8a36f1c04cdb76236154f0048737ac80712eb1300a87b58ef2dbc31eecde9f29cfab60352")
-	pdmNonce, _ = hex.DecodeString("0ef7fc9233488437704508b86b776e89")
-	receivedSPS2, _ = hex.DecodeString("f22a278294b63136a5db4046ca8e24f9f9fc2fe73e271dd1d3b62d52d665089b43e7e80f2e4ebe1649ccc57945cffbb9829ce30bfeabee5b4f1accd081b68ef741b332a0daff07b4c3af73c8477615cf6e9ee4cdd4e1d8ae90803612badbe062632137d2230ce29ad7da4c1477f4473532783b77a535600b94bfdf75ae6fd6eaf6cb2f711b03af282461ee484721e229a6758a9e28f8c9f8d68b1a117efa818a1b49861685eba3ce21b40c681158cda2a1f32aef70c017356bf28550f9cd7532f3dd00a1e9d6640f94e64506327e268a8efb76b3d8ef804c14dfa8384a98668874f2dc63c188d138cc68a879419fb553aa0a5cc9abf376f3be027521e2ba4a22da3c36675246467f6689696be1e4bd3742a61386e1615448a57b12ce6df672cb1c076d1371454d34eb7392585b52ba19cfcc36b461374e9b766686bd4003a18304fb6001b3f8b0e60a4b98148f3967ef486885931ea66ca79226cdded962a69c02a93079223a8cfe9d52b05128d809d785d96d5fea694617e2a6ace0b3cff8091cdb32eb2e231066671aa31ec0a4991dfb2818edbeccf21ae29530c4647482a5205645298d76dd602270e54993ee4e809ec28b31f8c48555129573c50ba4745b685f7c1c3a3950fb4f1670e02d111445b6b3412b9c19557aa2bf527937159f36717b2145c9041bc88a7caa7db29a1f7f8fc678ca32b4d5a607e8aa5cd2d1a68107249b2d199dfa13b831eabc59621fe46569ad9708b514220863c40b70cfeb4a484b566df7c0d097f5046f844c7cdcd60bcef26f6a25191ba575d1afa504f9146707d8ed0d0a024bb6b47f490025d15b58d12d18550daba817ba00c8fb52c6ccd395b055f485f062e6bf83506401e89b9340de02d31ec669cfb6aee5a03012d2a402")
+	podPrivate, _ = hex.DecodeString("0042000000000000000000000000000000000000000000000000000000000000")
+	podPublic, _ = hex.DecodeString("1e1837ef0d195188357571b5e5545b122e8f0967fda724203eb2561cce97285ef82b2d4f9ef1079f6c4b5b8356e23242e958b6d749a6b5681a4103566bdc5a89")
+	podNonce, _ = hex.DecodeString("00000000000000000000000000000000")
+	pdmPublic, _ = hex.DecodeString("ab9edd2ca1085f8c97fe2b479a105bcb154a90884f6fcc20245805ff5d7414d01c90da4bb43dd7b722fdb89b694825e6e622c8982e754743afe71ffed68419bf")
+	pdmNonce, _ = hex.DecodeString("386ad690604bddd68e9ddd61e4df6bc2")
+	receivedSPS2, _ = hex.DecodeString("cf63677515c8ad253d8f792e25c9ddd1d979b70202ae4bfe1654ec7b55d828073b948b2d167b875de46905e7dd120ca47692e3f87e00a643ffb1a02a06d2f3b911403ee6125a4b17764907639d61a0dfcad5f641bcfa184ef0d4829a68ff729e428509ae3e8ef3eb6618dec02ffaf080a5e44077a6b936b5486630433e7d41e4b79d2321501ee854f1e291efd3d19bcee700f6b7348fc09c397230a6c0c39258d6323fd55ad52e52a89e9d233cbc867c1cc06b1a7f49244a173a111a0eec7abea0d795d9df08fa8e35c7d5ee6fc0e4dee417a45839978f9a8aebfda20bf876f2f0938a1058b2380d32f0cc33d0cc77f707ba14160d0735d6748c2d2b5d76a3191315c9de8a9b4dda1592db97436f72874452c5485665e69a6a7356b39c31366d24c2dc31e782f9fce435e5377af21b9eeb533429075de2fa3b79bc6dcb69471bcb5f797f6526cb5ede0a8ecde52ac5bfab132c7855d615348576301d1b90bb4b96e544d2ef102c1f25e99384b1880fff322d2053210701f9b17d170cd56b86202a0d008511a64e4c74cbe60ecb2712c8b43fcf0eb4f9d384b9964e56d0be5c7f0c02928258267fdd6fa8a4d525fbbfc653b20cc37209220141bd9891d293db757b380acbffc93af86f5e241e82e8a36f98f3c4862e97dc461af306b6300cf26c77538b2644cacdb913e594579ed52aecde8228708ba006fec14ec2c5158e6ff34c0dd405c9a1432e28246e167d88120a8262fe1547fc70620b1694d74df664dcf9b6dfc6bf7a509e1a7eb092eca9eab49f39cea7a1d7ff53b0b00cc1d91d096bc7414fc41bf2856d4689b43d7ed3eb675bef04215b86b394481de95e751a36b9b0051b8d23e805f8ba8ec87a5a6cbf59c31d16b5af44d46a2283f790d3fd159baf0f")
 	firmwareId, _ = hex.DecodeString("9b0ab96a76f4") // Hard coded
 	// log.Infof("receivedSPS2: %x :: %d", receivedSPS2, len(receivedSPS2))
 	// 151 bytes ASN.1 DER encoded :: 64 bytes certificate :: 8 bytes CCM Checksum
@@ -48,27 +48,43 @@ func main() {
 	if err != nil {
 		log.Infof("Error :%s", spew.Sdump(err))
 	}
-
+	privateKey.Public()
 	publicKey, err := ecdh.P256().NewPublicKey(append([]byte{0x04}, pdmPublic...))
 	if err != nil {
 		log.Infof("Error :%s", spew.Sdump(err))
 	}
 
 	sharedSecret, err := privateKey.ECDH(publicKey)
-
+	if err != nil {
+		log.Infof("Error :%s", spew.Sdump(err))
+	}
 	log.Infof("Shared Secret: %x :: %d", sharedSecret, len(sharedSecret))
+	/*
+	   	controllerId1, _ := hex.DecodeString("00004ca4") // (4ca4) - Set by PDM
+	   	controllerId2, _ := hex.DecodeString("00004ca6") // (4ca4) - Set by PDM
+	   	controllerId3, _ := hex.DecodeString("fffffffe") // (4ca4) - Set by PDM
+	   	controllerId8, _ := hex.DecodeString("0004c5e3") // (4ca4) - Set by PDM
 
-	controllerId1, _ := hex.DecodeString("00004ca4") // (4ca4) - Set by PDM
-	controllerId2, _ := hex.DecodeString("00004ca6") // (4ca4) - Set by PDM
-	controllerId3, _ := hex.DecodeString("fffffffe") // (4ca4) - Set by PDM
-	controllerId4, _ := hex.DecodeString("0004c5e4") // (4ca4) - Set by PDM
-	controllerId5, _ := hex.DecodeString("ffffffff") // (4ca4) - Set by PDM
+	   	controllerId4, _ := hex.DecodeString("0004c5e4") // (4ca4) - Set by PDM
+	   	controllerId5, _ := hex.DecodeString("0004c5e5") // (4ca4) - Set by PDM
+	   	controllerId6, _ := hex.DecodeString("0004c5e6") // (4ca4) - Set by PDM
 
-	testControllerId(controllerId1, sharedSecret)
-	testControllerId(controllerId2, sharedSecret)
-	testControllerId(controllerId3, sharedSecret)
-	testControllerId(controllerId4, sharedSecret)
-	testControllerId(controllerId5, sharedSecret)
+	   	controllerId7, _ := hex.DecodeString("ffffffff") // (4ca4) - Set by PDM
+	   /*
+	   	/*
+	   		testControllerId(controllerId1, sharedSecret)
+	   		testControllerId(controllerId2, sharedSecret)
+	   		testControllerId(controllerId3, sharedSecret)
+	   		testControllerId(controllerId4, sharedSecret)
+	   		testControllerId(controllerId5, sharedSecret)
+	   		testControllerId(controllerId6, sharedSecret)
+	   		testControllerId(controllerId7, sharedSecret)
+	   		testControllerId(controllerId8, sharedSecret)
+	*/
+	controllerId9, _ := hex.DecodeString("00000000") // (4ca4) - Set by PDM
+
+	testControllerId(controllerId9, sharedSecret)
+
 }
 
 func testControllerId(controllerId []byte, sharedSecret []byte) {

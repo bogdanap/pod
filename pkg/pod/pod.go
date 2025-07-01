@@ -109,7 +109,7 @@ func (p *Pod) StartActivation() {
 
 	// Set the unique ID
 	uniqueId := firstCmd[3:7]
-	log.Tracef("SET_UNIQUE_ID uniqueId [ % X ]", uniqueId)
+	log.Tracef("SET_UNIQUE_ID uniqueId [ %x ]", uniqueId)
 	p.state.Id = uniqueId
 	p.ble.RefreshAdvertisingWithSpecifiedId(uniqueId)
 

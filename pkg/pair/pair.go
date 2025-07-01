@@ -3,9 +3,9 @@ package pair
 import (
 	"bytes"
 	"crypto/ecdh"
-	"crypto/rand"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/avereha/pod/pkg/message"
 
@@ -179,6 +179,7 @@ func (c *Pair) ParseSPS2(msg *message.Message) error {
 		log.Infof("Error parsing SPS2.1 Message :%s", spew.Sdump(msg))
 		return err
 	}
+	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
 
 	if !bytes.Equal(c.pdmConf, sp[sps21]) {
 		return fmt.Errorf("Invalid conf value. Expected: %x. Got %x", c.pdmConf, sp[sps21])
@@ -210,6 +211,16 @@ func (c *Pair) ParseSP0GP0(msg *message.Message) error {
 	return nil
 }
 
+var ZeroReader io.Reader = zeroReader{}
+
+type zeroReader struct{}
+
+func (zeroReader) Read(p []byte) (int, error) {
+	for i := range p {
+		p[i] = 0
+	}
+	return len(p), nil
+}
 func (c *Pair) GenerateP0() (*message.Message, error) {
 	var err error
 	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
@@ -234,8 +245,9 @@ func (c *Pair) computeMyData() error {
 	c.podPublic = make([]byte, 64)
 	c.podNonce = make([]byte, 16)
 
-	rand.Read(c.podNonce)
-	podPrivate, _ := ecdh.P256().GenerateKey(rand.Reader)
+	//rand.Read(c.podNonce)
+	ZeroReader.Read(c.podNonce)
+	podPrivate, _ := ecdh.P256().GenerateKey(ZeroReader)
 	c.podPrivate = podPrivate.Bytes()
 	c.podPublic = podPrivate.PublicKey().Bytes()[1:]
 	log.Infof("Pod Private %x :: %d", c.podPrivate, len(c.podPrivate))
