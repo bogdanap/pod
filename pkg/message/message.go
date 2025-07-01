@@ -151,7 +151,7 @@ func Unmarshal(data []byte) (*Message, error) {
 	}
 	ret.SequenceNumber = data[4]
 	ret.AckNumber = data[5]
-	var n = data[6]<<3 | data[7]>>5
+	var n = uint16(data[6]&0x7F)<<3 | uint16(data[7])>>5
 	if int(n) > len(data)-16 {
 		spew.Dump(ret)
 		return nil, fmt.Errorf("received length is too big in %x. Length:%d . remaining: %d", data, n, len(data)-16)

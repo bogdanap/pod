@@ -20,7 +20,7 @@ const (
 
 	sps0   = "SPS0="
 	sps1   = "SPS1="
-	sps2   = "SPS2="
+	sps21  = "SPS2.1="
 	sp0gp0 = "SP0,GP0"
 	p0     = "P0="
 )
@@ -54,8 +54,6 @@ func parseStringByte(expectedNames []string, data []byte) (map[string][]byte, er
 		data = data[n:]
 		length := int(data[0])<<8 | int(data[1])
 		ret[name] = data[2 : 2+length]
-		log.Tracef("Read field: %s :: %x :: %d", name, ret[name], len(ret[name]))
-
 		data = data[2+length:]
 	}
 	return ret, nil
@@ -176,26 +174,26 @@ func (c *Pair) GenerateSPS1() (*message.Message, error) {
 }
 
 func (c *Pair) ParseSPS2(msg *message.Message) error {
-	sp, err := parseStringByte([]string{sps2}, msg.Payload)
+	sp, err := parseStringByte([]string{sps21}, msg.Payload)
 	if err != nil {
-		log.Infof("SPS2 Message :%s", spew.Sdump(msg))
+		log.Infof("Error parsing SPS2.1 Message :%s", spew.Sdump(msg))
 		return err
 	}
 
-	if !bytes.Equal(c.pdmConf, sp[sps2]) {
-		return fmt.Errorf("Invalid conf value. Expected: %x. Got %x", c.pdmConf, sp[sps2])
+	if !bytes.Equal(c.pdmConf, sp[sps21]) {
+		return fmt.Errorf("Invalid conf value. Expected: %x. Got %x", c.pdmConf, sp[sps21])
 	}
-	log.Infof("Validated PDM SPS2: %x", sp[sps2])
+	log.Infof("Validated PDM SPS2: %x", sp[sps21])
 	return nil
 }
 
 func (c *Pair) GenerateSPS2() (*message.Message, error) {
 	var err error
 	sp := make(map[string][]byte)
-	sp[sps2] = c.podConf
+	sp[sps21] = c.podConf
 
 	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
-	msg.Payload, err = buildStringByte([]string{sps2}, sp)
+	msg.Payload, err = buildStringByte([]string{sps21}, sp)
 	if err != nil {
 		return nil, err
 	}
