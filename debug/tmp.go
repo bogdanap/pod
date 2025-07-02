@@ -27,22 +27,6 @@ func main() {
 	pdmNonce, _ = hex.DecodeString("386ad690604bddd68e9ddd61e4df6bc2")
 	receivedSPS2, _ = hex.DecodeString("cf63677515c8ad253d8f792e25c9ddd1d979b70202ae4bfe1654ec7b55d828073b948b2d167b875de46905e7dd120ca47692e3f87e00a643ffb1a02a06d2f3b911403ee6125a4b17764907639d61a0dfcad5f641bcfa184ef0d4829a68ff729e428509ae3e8ef3eb6618dec02ffaf080a5e44077a6b936b5486630433e7d41e4b79d2321501ee854f1e291efd3d19bcee700f6b7348fc09c397230a6c0c39258d6323fd55ad52e52a89e9d233cbc867c1cc06b1a7f49244a173a111a0eec7abea0d795d9df08fa8e35c7d5ee6fc0e4dee417a45839978f9a8aebfda20bf876f2f0938a1058b2380d32f0cc33d0cc77f707ba14160d0735d6748c2d2b5d76a3191315c9de8a9b4dda1592db97436f72874452c5485665e69a6a7356b39c31366d24c2dc31e782f9fce435e5377af21b9eeb533429075de2fa3b79bc6dcb69471bcb5f797f6526cb5ede0a8ecde52ac5bfab132c7855d615348576301d1b90bb4b96e544d2ef102c1f25e99384b1880fff322d2053210701f9b17d170cd56b86202a0d008511a64e4c74cbe60ecb2712c8b43fcf0eb4f9d384b9964e56d0be5c7f0c02928258267fdd6fa8a4d525fbbfc653b20cc37209220141bd9891d293db757b380acbffc93af86f5e241e82e8a36f98f3c4862e97dc461af306b6300cf26c77538b2644cacdb913e594579ed52aecde8228708ba006fec14ec2c5158e6ff34c0dd405c9a1432e28246e167d88120a8262fe1547fc70620b1694d74df664dcf9b6dfc6bf7a509e1a7eb092eca9eab49f39cea7a1d7ff53b0b00cc1d91d096bc7414fc41bf2856d4689b43d7ed3eb675bef04215b86b394481de95e751a36b9b0051b8d23e805f8ba8ec87a5a6cbf59c31d16b5af44d46a2283f790d3fd159baf0f")
 	firmwareId, _ = hex.DecodeString("9b0ab96a76f4") // Hard coded
-	// log.Infof("receivedSPS2: %x :: %d", receivedSPS2, len(receivedSPS2))
-	// 151 bytes ASN.1 DER encoded :: 64 bytes certificate :: 8 bytes CCM Checksum
-
-	// var ans1der = receivedSPS2[:215]
-	// log.Infof("ans1der: %x :: %d", ans1der, len(ans1der))
-	// type resultType struct {
-	// x int
-	// }
-	// var tmp resultType
-	// var cert, err = asn1.Unmarshal(ans1der, tmp)
-	// cert, err := x509.ParseCertificate(receivedSPS2[0:215])
-	// if err != nil {
-	// log.Infof("Error :%s", spew.Sdump(err))
-	// }
-	// log.Infof("result: %x :: %d", result, len(result))
-	// log.Infof("cert: %x", spew.Sdump(cert))
 
 	privateKey, err := ecdh.P256().NewPrivateKey(podPrivate)
 	if err != nil {
@@ -59,7 +43,7 @@ func main() {
 		log.Infof("Error :%s", spew.Sdump(err))
 	}
 	log.Infof("Shared Secret: %x :: %d", sharedSecret, len(sharedSecret))
-	controllerId9, _ := hex.DecodeString("00000000") // (4ca4) - Set by PDM
+	controllerId9, _ := hex.DecodeString("00000000")
 
 	testKeyDerivation(controllerId9, pdmPublic, podPublic, sharedSecret)
 }
@@ -122,7 +106,7 @@ func testCCMOpen(key []byte, tagSize int, nonce []byte) {
 	// log.Infof("dst: %x :: %d", dst, len(dst))
 	//log.Infof("Error :%s", spew.Sdump(err))
 	if err == nil {
-		log.Infof("SUCCESS!!! r: %x :: %d", r, len(r))
+		log.Infof("1SUCCESS!!! r: %x :: %d", r, len(r))
 		log.Infof("dst: %x :: %d", dst, len(dst))
 	}
 
