@@ -303,7 +303,7 @@ func (b *Ble) loop(stop chan bool) {
 		case <-stop:
 			return
 		case msg := <-b.messageOutput:
-			b.writeMessageData(msg)
+			b.writeMessage(msg)
 		case data := <-b.dataInput:
 			msg, err := b.readMessageData(data)
 			if err != nil {
@@ -345,37 +345,10 @@ func (b *Ble) expectCommand(expected Packet) {
 	}
 }
 
-func (b *Ble) writeMessageData(msg *message.Message) {
-	var buf bytes.Buffer
-	var index byte = 0
-
-	bytes, err := msg.Marshal()
-	if err != nil {
-		log.Fatalf("pkg bluetooth; could not marshal the message %s", err)
-	}
-	log.Tracef("pkg bluetooth; Sending message: %x", bytes)
-
-	sum := crc32.ChecksumIEEE(bytes)
-
-	buf.WriteByte(index) // index
-	buf.WriteByte(0)     // fragments
-
-	buf.WriteByte(byte(sum >> 24))
-	buf.WriteByte(byte(sum >> 16))
-	buf.WriteByte(byte(sum >> 8))
-	buf.WriteByte(byte(sum))
-	buf.WriteByte((byte(len(bytes))))
-	buf.Write(bytes[:])
-	b.writeDataBuffer(&buf)
-	return
-}
-
 func (b *Ble) writeMessage(msg *message.Message) {
 	var buf bytes.Buffer
 	var index byte = 0
 
-	b.WriteCmd(CmdRTS)
-	b.expectCommand(CmdCTS) // TODO figure out what to do if !CTS
 	bytes, err := msg.Marshal()
 	if err != nil {
 		log.Fatalf("pkg bluetooth; could not marshal the message %s", err)

@@ -18,15 +18,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Direction byte
+
 const (
 	sp1 = "SP1="
 	sp2 = ",SP2="
 
-	sps0   = "SPS0="
-	sps1   = "SPS1="
-	sps21  = "SPS2.1="
+	sps0  = "SPS0="
+	sps1  = "SPS1="
+	sps21 = "SPS2.1="
+	sps22 = "SPS2.2="
+
 	sp0gp0 = "SP0,GP0"
 	p0     = "P0="
+
+	Read  Direction = 0x01
+	Write Direction = 0x02
 )
 
 type Pair struct {
@@ -183,9 +190,9 @@ func (c *Pair) GenerateSPS1() (*message.Message, error) {
 	return msg, nil
 }
 
-func (c *Pair) nonce13() []byte {
+func (c *Pair) nonce13(direction Direction) []byte {
 	ret := make([]byte, 0)
-	ret = append(ret, 0x01)
+	ret = append(ret, byte(direction))
 	ret = append(ret, c.pdmNonce[:6]...)
 	ret = append(ret, c.podNonce[:6]...)
 	return ret
@@ -221,7 +228,7 @@ func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
 	log.Infof("ConfKey: %x :: %d", confKey, len(confKey))
 	log.Infof("LTK:     %x :: %d", ltk, len(ltk))
 
-	nonce := c.nonce13()
+	nonce := c.nonce13(Read)
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
 	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
@@ -256,7 +263,11 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 }
 
 func (c *Pair) encryptSPS21() []byte {
-	panic("unimplemented")
+	nonce := c.nonce13(Write)
+	tagSize := 8
+	aes, _ := aes.NewCipher(c.confKey)
+	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
+	return accm.Seal(nil, nonce, c.pdmCert, nil)
 }
 
 func (c *Pair) ParseSP0GP0(msg *message.Message) error {
