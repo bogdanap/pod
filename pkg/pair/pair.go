@@ -50,6 +50,14 @@ type Pair struct {
 	confKey []byte // key used to sign the "Conf" values
 }
 
+func (c *Pair) GenerateSPS22() (*message.Message, error) {
+	panic("unimplemented")
+}
+
+func (c *Pair) ParseSPS22(msg *message.Message) any {
+	panic("unimplemented")
+}
+
 func parseStringByte(expectedNames []string, data []byte) (map[string][]byte, error) {
 	ret := make(map[string][]byte)
 	for _, name := range expectedNames {
@@ -126,11 +134,7 @@ func (c *Pair) ParseSPS1(msg *message.Message) error {
 	log.Debugf("Pdm Public  %x :: %d", c.pdmPublic, len(c.pdmPublic))
 	log.Debugf("Pdm Nonce   %x :: %d", c.pdmNonce, len(c.pdmNonce))
 
-	// c.curve25519LTK, err = curve25519.X25519(c.podPrivate, c.pdmPublic)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (c *Pair) GenerateSPS0() (*message.Message, error) {
@@ -224,7 +228,7 @@ func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
 	return accm.Open(nil, nonce, sps21, nil)
 }
 
-func (c *Pair) ParseSPS2(msg *message.Message) error {
+func (c *Pair) ParseSPS21(msg *message.Message) error {
 	sp, err := parseStringByte([]string{sps21}, msg.Payload)
 	if err != nil {
 		log.Infof("Error parsing SPS2.1 Message :%s", spew.Sdump(msg))
@@ -233,17 +237,14 @@ func (c *Pair) ParseSPS2(msg *message.Message) error {
 	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
 
 	c.pdmCert, err = c.decryptSPS21(sp[sps21])
-	if !bytes.Equal(c.pdmConf, sp[sps21]) {
-		return fmt.Errorf("Invalid conf value. Expected: %x. Got %x", c.pdmConf, sp[sps21])
-	}
 	log.Infof("Validated PDM SPS2: %x", sp[sps21])
-	return nil
+	return err
 }
 
-func (c *Pair) GenerateSPS2() (*message.Message, error) {
+func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	var err error
 	sp := make(map[string][]byte)
-	sp[sps21] = c.podConf
+	sp[sps21] = c.encryptSPS21()
 
 	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
 	msg.Payload, err = buildStringByte([]string{sps21}, sp)
@@ -252,6 +253,10 @@ func (c *Pair) GenerateSPS2() (*message.Message, error) {
 	}
 	log.Debugf("Generated SPS2: %x", msg.Payload)
 	return msg, nil
+}
+
+func (c *Pair) encryptSPS21() []byte {
+	panic("unimplemented")
 }
 
 func (c *Pair) ParseSP0GP0(msg *message.Message) error {

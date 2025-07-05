@@ -16,11 +16,11 @@ type PODState struct {
 
 	Id []byte `toml:"id"` // 4 byte
 
-	MsgSeq         uint8  `toml:"msg_seq"`   // TODO: is this the same as nonceSeq?
-	CmdSeq         uint8  `toml:"cmd_seq"`   // TODO: are all those 3 the same number ???
-	NonceSeq       uint64 `toml:"nonce_seq"` // or 16?
+	MsgSeq   uint8  `toml:"msg_seq"`   // TODO: is this the same as nonceSeq?
+	CmdSeq   uint8  `toml:"cmd_seq"`   // TODO: are all those 3 the same number ???
+	NonceSeq uint64 `toml:"nonce_seq"` // or 16?
 
-	LastProgSeqNum uint8  `toml:"last_prog_seq"`
+	LastProgSeqNum uint8 `toml:"last_prog_seq"`
 
 	NoncePrefix []byte `toml:"nonce_prefix"`
 	CK          []byte `toml:"ck"`
@@ -68,5 +68,5 @@ func (p *PODState) Save() error {
 }
 
 func (p *PODState) MinutesActive() uint16 {
-	return uint16(time.Now().Sub(p.ActivationTime).Round(time.Minute).Minutes())
+	return uint16(time.Since(p.ActivationTime).Round(time.Minute).Minutes())
 }

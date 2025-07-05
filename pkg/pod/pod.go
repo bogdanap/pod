@@ -146,10 +146,22 @@ func (p *Pod) StartActivation() {
 
 	// read PDM conf value
 	msg, _ = p.ble.ReadMessage()
-	pair.ParseSPS2(msg)
+	pair.ParseSPS21(msg)
 
 	// send POD conf value
-	msg, err = pair.GenerateSPS2()
+	msg, err = pair.GenerateSPS21()
+	if err != nil {
+		log.Fatal(err)
+	}
+	p.ble.WriteMessage(msg)
+
+	// read SPS2.2
+	msg, _ = p.ble.ReadMessage()
+	if err := pair.ParseSPS22(msg); err != nil {
+		log.Fatalf("pkg pod; error parsing SPS2 %s", err)
+	}
+
+	msg, err = pair.GenerateSPS22()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -231,7 +243,7 @@ func (p *Pod) CommandLoop(pMsg PodMsgBody) {
 	log.Infof("pkg pod; command loop.")
 	var lastMsgSeq uint8 = 0
 	var data []byte = make([]byte, 4)
-	var n int = 0
+	var n int
 	for {
 		if pMsg.DeactivateFlag {
 			log.Infof("pkg pod; Pod was deactivated. Use -fresh for new pod")
