@@ -2,7 +2,10 @@ package pair
 
 import (
 	"bytes"
+	"crypto/aes"
 	"crypto/ecdh"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +14,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jacobsa/crypto/cmac"
+	aesccm "github.com/pschlump/AesCCM"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -39,6 +43,8 @@ type Pair struct {
 	sharedSecret []byte
 	pdmID        []byte
 	podID        []byte
+
+	pdmCert []byte
 
 	ltk     []byte
 	confKey []byte // key used to sign the "Conf" values
@@ -173,6 +179,51 @@ func (c *Pair) GenerateSPS1() (*message.Message, error) {
 	return msg, nil
 }
 
+func (c *Pair) nonce13() []byte {
+	ret := make([]byte, 0)
+	ret = append(ret, 0x01)
+	ret = append(ret, c.pdmNonce[:6]...)
+	ret = append(ret, c.podNonce[:6]...)
+	return ret
+}
+
+func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
+	hash := sha256.New()
+	firmwareId, _ := hex.DecodeString("9b0ab96a76f4") // Hard coded
+	controllerId, _ := hex.DecodeString("00000000")
+	lengthBytes := []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	lengthBytes[7] = byte(len(firmwareId))
+	hash.Write(lengthBytes) // length 6 at pos 8
+	hash.Write(firmwareId)  // firmwareId (9b0ab96a76f4)
+	lengthBytes[7] = byte(len(controllerId))
+	hash.Write(lengthBytes)  // length 6 at pos 8
+	hash.Write(controllerId) // controllerId
+	lengthBytes[7] = byte(len(c.pdmPublic))
+	hash.Write(lengthBytes) // length 6 at pos 8
+	hash.Write(c.pdmPublic) // key 1
+	lengthBytes[7] = byte(len(c.podPublic))
+	hash.Write(lengthBytes) // length 6 at pos 8
+	hash.Write(c.podPublic) // key 2
+	lengthBytes[7] = byte(len(c.sharedSecret))
+	hash.Write(lengthBytes) // length 6 at pos 8
+	hash.Write(c.sharedSecret)
+	derivedKey := hash.Sum(nil)
+	log.Infof("DerivedKey: %x :: %d", derivedKey, len(derivedKey))
+	confKey := derivedKey[:16]
+	ltk := derivedKey[16:]
+
+	c.confKey = confKey
+	c.ltk = ltk
+	log.Infof("ConfKey: %x :: %d", confKey, len(confKey))
+	log.Infof("LTK:     %x :: %d", ltk, len(ltk))
+
+	nonce := c.nonce13()
+	tagSize := 8
+	aes, _ := aes.NewCipher(c.confKey)
+	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
+	return accm.Open(nil, nonce, sps21, nil)
+}
+
 func (c *Pair) ParseSPS2(msg *message.Message) error {
 	sp, err := parseStringByte([]string{sps21}, msg.Payload)
 	if err != nil {
@@ -181,6 +232,7 @@ func (c *Pair) ParseSPS2(msg *message.Message) error {
 	}
 	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
 
+	c.pdmCert, err = c.decryptSPS21(sp[sps21])
 	if !bytes.Equal(c.pdmConf, sp[sps21]) {
 		return fmt.Errorf("Invalid conf value. Expected: %x. Got %x", c.pdmConf, sp[sps21])
 	}
@@ -271,7 +323,7 @@ func (c *Pair) computePairData() error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Donna LTK %x :: %d", c.sharedSecret, len(c.sharedSecret))
+	log.Infof("Shared secret %x :: %d", c.sharedSecret, len(c.sharedSecret))
 
 	//first_key = data.pod_public[-4:] + data.pdm_public[-4:] + data.pod_nonce[-4:] + data.pdm_nonce[-4:]
 	var endSize = 4
