@@ -58,14 +58,6 @@ type Pair struct {
 	confKey []byte // key used to sign the "Conf" values
 }
 
-func (c *Pair) GenerateSPS22() (*message.Message, error) {
-	panic("unimplemented")
-}
-
-func (c *Pair) ParseSPS22(msg *message.Message) any {
-	panic("unimplemented")
-}
-
 func parseStringByte(expectedNames []string, data []byte) (map[string][]byte, error) {
 	ret := make(map[string][]byte)
 	for _, name := range expectedNames {
@@ -281,11 +273,33 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	return msg, nil
 }
 
+func (c *Pair) GenerateSPS22() (*message.Message, error) {
+	panic("unimplemented")
+}
+
+func (c *Pair) ParseSPS22(msg *message.Message) any {
+	sp, err := parseStringByte([]string{sps22}, msg.Payload)
+	if err != nil {
+		log.Infof("Error parsing SPS2.2 Message :%s", spew.Sdump(msg))
+		return err
+	}
+	log.Infof("Received SPS2.2: %x :: %d", sp[sps22], len(sp[sps22]))
+
+	c.pdmCert, err = c.decryptSPS22(sp[sps22])
+	log.Infof("Validated PDM SPS2: %x", sp[sps21])
+	return err
+}
+
+func (c *Pair) decryptSPS22(b []byte) ([]byte, error) {
+	panic("unimplemented")
+}
+
 func (c *Pair) encryptSPS21() []byte {
 	nonce := c.nonce13(Write)
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
 	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
+	c.incrementNonce(c.podNonce)
 	return accm.Seal(nil, nonce, c.pdmCert, nil)
 }
 
