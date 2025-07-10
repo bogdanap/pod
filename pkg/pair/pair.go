@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/ecdh"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -144,6 +145,13 @@ func (c *Pair) ParseSPS1(msg *message.Message) error {
 	return err
 }
 
+func (c *Pair) incrementNonce(nonce []byte) {
+	num := binary.LittleEndian.Uint64(nonce)
+	num += 1
+	binary.LittleEndian.PutUint64(nonce, num)
+	log.Infof("Nonce after increment: %x :: %d", nonce, len(nonce))
+}
+
 func (c *Pair) GenerateSPS0() (*message.Message, error) {
 	var err error
 	var buf bytes.Buffer
@@ -193,8 +201,14 @@ func (c *Pair) GenerateSPS1() (*message.Message, error) {
 func (c *Pair) nonce13(direction Direction) []byte {
 	ret := make([]byte, 0)
 	ret = append(ret, byte(direction))
-	ret = append(ret, c.pdmNonce[:6]...)
-	ret = append(ret, c.podNonce[:6]...)
+	if direction == Read {
+		ret = append(ret, c.pdmNonce[:6]...)
+		ret = append(ret, c.podNonce[:6]...)
+	} else {
+		// TODO
+		ret = append(ret, c.podNonce[:6]...)
+		ret = append(ret, c.pdmNonce[:6]...)
+	}
 	return ret
 }
 
@@ -232,7 +246,12 @@ func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
 	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
-	return accm.Open(nil, nonce, sps21, nil)
+	decrypted, err := accm.Open(nil, nonce, sps21, nil)
+	if err != nil {
+		return nil, err
+	}
+	c.incrementNonce(c.pdmNonce)
+	return decrypted, nil
 }
 
 func (c *Pair) ParseSPS21(msg *message.Message) error {
@@ -258,7 +277,7 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Generated SPS2: %x", msg.Payload)
+	log.Debugf("Generated SPS2: %x :: %d", msg.Payload, len(msg.Payload))
 	return msg, nil
 }
 
