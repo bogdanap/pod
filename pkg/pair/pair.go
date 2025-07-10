@@ -28,7 +28,7 @@ const (
 	sps0  = "SPS0="
 	sps1  = "SPS1="
 	sps21 = "SPS2.1="
-	sps22 = "SPS2.2="
+	sps22 = "SPS2="
 
 	sp0gp0 = "SP0,GP0"
 	p0     = "P0="
