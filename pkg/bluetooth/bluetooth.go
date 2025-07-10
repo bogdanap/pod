@@ -347,17 +347,22 @@ func (b *Ble) expectCommand(expected Packet) {
 
 func (b *Ble) writeMessage(msg *message.Message) {
 	var buf bytes.Buffer
-	var index byte = 0
+	var index int = 0
 
 	bytes, err := msg.Marshal()
 	if err != nil {
 		log.Fatalf("pkg bluetooth; could not marshal the message %s", err)
 	}
-	log.Tracef("pkg bluetooth; Sending message: %x", bytes)
+	log.Tracef("pkg bluetooth; Sending message: %x :: %d", bytes, len(bytes))
+
+	capacityWithOptionalPlusOne := MaxPkgLen*2 - 2 - 7
+	firstPacketCapacityWithoutMiddlePackets := MaxPkgLen - 7
+	firstPacketCapacityWithMiddlePackets := MaxPkgLen - 2
 	sum := crc32.ChecksumIEEE(bytes)
-	if len(bytes) <= 18 {
-		buf.WriteByte(index) // index
-		buf.WriteByte(0)     // fragments
+
+	if len(bytes) <= capacityWithOptionalPlusOne {
+		buf.WriteByte(byte(index)) // index
+		buf.WriteByte(0)           // fragments
 
 		buf.WriteByte(byte(sum >> 24))
 		buf.WriteByte(byte(sum >> 16))
@@ -365,58 +370,63 @@ func (b *Ble) writeMessage(msg *message.Message) {
 		buf.WriteByte(byte(sum))
 		buf.WriteByte((byte(len(bytes))))
 		end := len(bytes)
-		if len(bytes) > 14 {
-			end = 14
+		if len(bytes) > firstPacketCapacityWithoutMiddlePackets {
+			end = firstPacketCapacityWithoutMiddlePackets
 		}
 		buf.Write(bytes[:end])
+		for buf.Len() < MaxPkgLen {
+			buf.WriteByte(0)
+		}
+
 		b.writeDataBuffer(&buf)
 
-		if len(bytes) > 14 {
-			buf.WriteByte(index)
-			buf.WriteByte(byte(len(bytes) - 14))
-			buf.Write(bytes[14:])
+		if len(bytes) > firstPacketCapacityWithoutMiddlePackets {
+			index += 1
+			buf.WriteByte(byte(index))
+			buf.WriteByte(byte(len(bytes) - firstPacketCapacityWithoutMiddlePackets))
+			buf.Write(bytes[firstPacketCapacityWithoutMiddlePackets:])
+			for buf.Len() < MaxPkgLen {
+				buf.WriteByte(0)
+			}
 			b.writeDataBuffer(&buf)
 		}
 		return
 	}
 
 	size := len(bytes)
-	fullFragments := (byte)((size - 18) / 19)
-	rest := (byte)((size - (int(fullFragments) * 19)) - 18)
-	buf.WriteByte(index)
-	buf.WriteByte(fullFragments + 1)
-	buf.Write(bytes[:18])
+	fullFragments := (size - firstPacketCapacityWithMiddlePackets) / (MaxPkgLen - 1)
+	rest := (size - (int(fullFragments) * (MaxPkgLen - 1))) - firstPacketCapacityWithMiddlePackets
+	log.Tracef("pkg bluetooth; fragments: full=%d, rest = %d", fullFragments, rest)
+	buf.WriteByte(byte(index))
+	buf.WriteByte(byte(fullFragments + 1))
+	buf.Write(bytes[:firstPacketCapacityWithMiddlePackets])
 
 	b.writeDataBuffer(&buf)
 
 	for index = 1; index <= fullFragments; index++ {
-		buf.WriteByte(index)
-		if index == 1 {
-			buf.Write(bytes[18:37])
-		} else {
-			buf.Write(bytes[(index-1)*19+18 : (index-1)*19+18+19])
-		}
+		buf.WriteByte(byte(index))
+		buf.Write(bytes[(index-1)*(MaxPkgLen-1)+firstPacketCapacityWithMiddlePackets : (index-1)*(MaxPkgLen-1)+firstPacketCapacityWithMiddlePackets+MaxPkgLen-1])
 		b.writeDataBuffer(&buf)
 	}
 
-	buf.WriteByte(index)
-	buf.WriteByte(rest)
+	buf.WriteByte(byte(index))
+	buf.WriteByte(byte(rest))
 	buf.WriteByte(byte(sum >> 24))
 	buf.WriteByte(byte(sum >> 16))
 	buf.WriteByte(byte(sum >> 8))
 	buf.WriteByte(byte(sum))
 	end := rest
-	if rest > 14 {
-		end = 14
+	if rest > firstPacketCapacityWithoutMiddlePackets {
+		end = firstPacketCapacityWithoutMiddlePackets
 	}
-	buf.Write(bytes[(fullFragments*19)+18 : (fullFragments*19)+18+end])
+	buf.Write(bytes[(fullFragments*(MaxPkgLen-1))+firstPacketCapacityWithMiddlePackets : (fullFragments*(MaxPkgLen-1))+firstPacketCapacityWithMiddlePackets+end])
 	b.writeDataBuffer(&buf)
-	if rest > 14 {
+	if rest > firstPacketCapacityWithoutMiddlePackets {
 		index++
-		buf.WriteByte(index)
-		buf.WriteByte(rest - 14)
-		buf.Write(bytes[fullFragments*19+18+14:])
-		for buf.Len() < 20 {
+		buf.WriteByte(byte(index))
+		buf.WriteByte(byte(rest - firstPacketCapacityWithoutMiddlePackets))
+		buf.Write(bytes[fullFragments*(MaxPkgLen-1)+firstPacketCapacityWithMiddlePackets+end:])
+		for buf.Len() < MaxPkgLen {
 			buf.WriteByte(0)
 		}
 		b.writeDataBuffer(&buf)
