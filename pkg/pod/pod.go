@@ -157,11 +157,11 @@ func (p *Pod) StartActivation() {
 
 	// read SPS2.2
 	msg, _ = p.ble.ReadMessage()
-       if err := pair.ParseSPS2(msg); err != nil {
+	if err := pair.ParseSPS2(msg); err != nil {
 		log.Fatalf("pkg pod; error parsing SPS2 %s", err)
 	}
 
-       msg, err = pair.GenerateSPS2()
+	msg, err = pair.GenerateSPS2()
 	if err != nil {
 		log.Fatal(err)
 	}

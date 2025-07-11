@@ -265,10 +265,24 @@ func (c *Pair) computeConfAndLTK() {
 func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	var err error
 	sp := make(map[string][]byte)
-	sp[sps21] = c.encryptSPS21()
+	sp[sps21] = c.encryptSPS21(c.pdmCert)
 
 	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
 	msg.Payload, err = buildStringByte([]string{sps21}, sp)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("Generated SPS2.1: %x :: %d", msg.Payload, len(msg.Payload))
+	return msg, nil
+}
+
+func (c *Pair) GenerateSPS2() (*message.Message, error) {
+	var err error
+	sp := make(map[string][]byte)
+	sp[sps2] = c.encryptSPS2()
+
+	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
+	msg.Payload, err = buildStringByte([]string{sps2}, sp)
 	if err != nil {
 		return nil, err
 	}
@@ -276,8 +290,8 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	return msg, nil
 }
 
-func (c *Pair) GenerateSPS2() (*message.Message, error) {
-	panic("GenerateSPS2() not yet implemented")
+func (c *Pair) encryptSPS2() []byte {
+	return c.encryptSPS21(c.pdmCert2)
 }
 
 func (c *Pair) ParseSPS2(msg *message.Message) any {
@@ -297,13 +311,13 @@ func (c *Pair) decryptSPS22(b []byte) ([]byte, error) {
 	return c.decryptSPS21(b)
 }
 
-func (c *Pair) encryptSPS21() []byte {
+func (c *Pair) encryptSPS21(data []byte) []byte {
 	nonce := c.nonce13(Write)
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
 	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
 	c.incrementNonce(c.podNonce)
-	return accm.Seal(nil, nonce, c.pdmCert, nil)
+	return accm.Seal(nil, nonce, data, nil)
 }
 
 func (c *Pair) ParseSP0GP0(msg *message.Message) error {
