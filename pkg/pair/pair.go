@@ -28,7 +28,7 @@ const (
 	sps0  = "SPS0="
 	sps1  = "SPS1="
 	sps21 = "SPS2.1="
-       sps2 = "SPS2="
+	sps2  = "SPS2="
 
 	sp0gp0 = "SP0,GP0"
 	p0     = "P0="
@@ -52,7 +52,8 @@ type Pair struct {
 	pdmID        []byte
 	podID        []byte
 
-	pdmCert []byte
+	pdmCert  []byte
+	pdmCert2 []byte
 
 	ltk     []byte
 	confKey []byte // key used to sign the "Conf" values
@@ -205,6 +206,32 @@ func (c *Pair) nonce13(direction Direction) []byte {
 }
 
 func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
+	nonce := c.nonce13(Read)
+	tagSize := 8
+	aes, _ := aes.NewCipher(c.confKey)
+	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
+	decrypted, err := accm.Open(nil, nonce, sps21, nil)
+	if err != nil {
+		return nil, err
+	}
+	c.incrementNonce(c.pdmNonce)
+	return decrypted, nil
+}
+
+func (c *Pair) ParseSPS21(msg *message.Message) error {
+	sp, err := parseStringByte([]string{sps21}, msg.Payload)
+	if err != nil {
+		log.Infof("Error parsing SPS2.1 Message :%s", spew.Sdump(msg))
+		return err
+	}
+	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
+	c.computeConfAndLTK()
+	c.pdmCert, err = c.decryptSPS21(sp[sps21])
+	log.Infof("Validated PDM SPS2: %x", sp[sps21])
+	return err
+}
+
+func (c *Pair) computeConfAndLTK() {
 	hash := sha256.New()
 	firmwareId, _ := hex.DecodeString("9b0ab96a76f4") // Hard coded
 	controllerId, _ := hex.DecodeString("00000000")
@@ -233,30 +260,6 @@ func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
 	c.ltk = ltk
 	log.Infof("ConfKey: %x :: %d", confKey, len(confKey))
 	log.Infof("LTK:     %x :: %d", ltk, len(ltk))
-
-	nonce := c.nonce13(Read)
-	tagSize := 8
-	aes, _ := aes.NewCipher(c.confKey)
-	accm, _ := aesccm.NewCCM(aes, tagSize, len(nonce))
-	decrypted, err := accm.Open(nil, nonce, sps21, nil)
-	if err != nil {
-		return nil, err
-	}
-	c.incrementNonce(c.pdmNonce)
-	return decrypted, nil
-}
-
-func (c *Pair) ParseSPS21(msg *message.Message) error {
-	sp, err := parseStringByte([]string{sps21}, msg.Payload)
-	if err != nil {
-		log.Infof("Error parsing SPS2.1 Message :%s", spew.Sdump(msg))
-		return err
-	}
-	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
-
-	c.pdmCert, err = c.decryptSPS21(sp[sps21])
-	log.Infof("Validated PDM SPS2: %x", sp[sps21])
-	return err
 }
 
 func (c *Pair) GenerateSPS21() (*message.Message, error) {
@@ -274,24 +277,24 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 }
 
 func (c *Pair) GenerateSPS2() (*message.Message, error) {
-       panic("GenerateSPS2() not yet implemented")
+	panic("GenerateSPS2() not yet implemented")
 }
 
 func (c *Pair) ParseSPS2(msg *message.Message) any {
-       sp, err := parseStringByte([]string{sps2}, msg.Payload)
+	sp, err := parseStringByte([]string{sps2}, msg.Payload)
 	if err != nil {
-               log.Infof("Error parsing SPS2 Message :%s", spew.Sdump(msg))
+		log.Infof("Error parsing SPS2 Message :%s", spew.Sdump(msg))
 		return err
 	}
-       log.Infof("Received SPS2: %x :: %d", sp[sps2], len(sp[sps2]))
+	log.Infof("Received SPS2: %x :: %d", sp[sps2], len(sp[sps2]))
 
-       c.pdmCert, err = c.decryptSPS2(sp[sps2])
-	log.Infof("Validated PDM SPS2: %x", sp[sps21])
+	c.pdmCert2, err = c.decryptSPS22(sp[sps2])
+	log.Infof("Validated PDM SPS2: %x :: %d %v", c.pdmCert2, len(c.pdmCert2), err)
 	return err
 }
 
-func (c *Pair) decryptSPS2(b []byte) ([]byte, error) {
-       panic("decryptSPS2() not yet implemented")
+func (c *Pair) decryptSPS22(b []byte) ([]byte, error) {
+	return c.decryptSPS21(b)
 }
 
 func (c *Pair) encryptSPS21() []byte {
