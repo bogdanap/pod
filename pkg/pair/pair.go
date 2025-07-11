@@ -28,7 +28,7 @@ const (
 	sps0  = "SPS0="
 	sps1  = "SPS1="
 	sps21 = "SPS2.1="
-	sps22 = "SPS2="
+       sps2 = "SPS2="
 
 	sp0gp0 = "SP0,GP0"
 	p0     = "P0="
@@ -273,25 +273,25 @@ func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	return msg, nil
 }
 
-func (c *Pair) GenerateSPS22() (*message.Message, error) {
-	panic("unimplemented")
+func (c *Pair) GenerateSPS2() (*message.Message, error) {
+       panic("GenerateSPS2() not yet implemented")
 }
 
-func (c *Pair) ParseSPS22(msg *message.Message) any {
-	sp, err := parseStringByte([]string{sps22}, msg.Payload)
+func (c *Pair) ParseSPS2(msg *message.Message) any {
+       sp, err := parseStringByte([]string{sps2}, msg.Payload)
 	if err != nil {
-		log.Infof("Error parsing SPS2.2 Message :%s", spew.Sdump(msg))
+               log.Infof("Error parsing SPS2 Message :%s", spew.Sdump(msg))
 		return err
 	}
-	log.Infof("Received SPS2.2: %x :: %d", sp[sps22], len(sp[sps22]))
+       log.Infof("Received SPS2: %x :: %d", sp[sps2], len(sp[sps2]))
 
-	c.pdmCert, err = c.decryptSPS22(sp[sps22])
+       c.pdmCert, err = c.decryptSPS2(sp[sps2])
 	log.Infof("Validated PDM SPS2: %x", sp[sps21])
 	return err
 }
 
-func (c *Pair) decryptSPS22(b []byte) ([]byte, error) {
-	panic("unimplemented")
+func (c *Pair) decryptSPS2(b []byte) ([]byte, error) {
+       panic("decryptSPS2() not yet implemented")
 }
 
 func (c *Pair) encryptSPS21() []byte {
