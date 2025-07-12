@@ -227,7 +227,7 @@ func (c *Pair) ParseSPS21(msg *message.Message) error {
 	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
 	c.computeConfAndLTK()
 	c.pdmCert, err = c.decryptSPS(sp[sps21])
-	log.Infof("Validated PDM SPS2: %x", sp[sps21])
+	log.Infof("Validated PDM SPS2.2: %x :: %d", c.pdmCert, len(c.pdmCert))
 	return err
 }
 
