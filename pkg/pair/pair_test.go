@@ -72,7 +72,7 @@ func TestPair_decryptSPS21(t *testing.T) {
 				ltk:          tt.fields.ltk,
 				confKey:      tt.fields.confKey,
 			}
-			got, err := c.decryptSPS21(tt.args.sps21)
+			got, err := c.decryptSPS(tt.args.sps21)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Pair.decryptSPS21() error = %v, wantErr %v", err, tt.wantErr)
 				return

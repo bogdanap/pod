@@ -205,7 +205,7 @@ func (c *Pair) nonce13(direction Direction) []byte {
 	return ret
 }
 
-func (c *Pair) decryptSPS21(sps21 []byte) ([]byte, error) {
+func (c *Pair) decryptSPS(sps21 []byte) ([]byte, error) {
 	nonce := c.nonce13(Read)
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
@@ -226,7 +226,7 @@ func (c *Pair) ParseSPS21(msg *message.Message) error {
 	}
 	log.Infof("Received SPS2.1: %x :: %d", sp[sps21], len(sp[sps21]))
 	c.computeConfAndLTK()
-	c.pdmCert, err = c.decryptSPS21(sp[sps21])
+	c.pdmCert, err = c.decryptSPS(sp[sps21])
 	log.Infof("Validated PDM SPS2: %x", sp[sps21])
 	return err
 }
@@ -265,7 +265,7 @@ func (c *Pair) computeConfAndLTK() {
 func (c *Pair) GenerateSPS21() (*message.Message, error) {
 	var err error
 	sp := make(map[string][]byte)
-	sp[sps21] = c.encryptSPS21(c.pdmCert)
+	sp[sps21] = c.encryptSPS(c.pdmCert)
 
 	msg := message.NewMessage(message.MessageTypePairing, c.podID, c.pdmID)
 	msg.Payload, err = buildStringByte([]string{sps21}, sp)
@@ -291,7 +291,7 @@ func (c *Pair) GenerateSPS2() (*message.Message, error) {
 }
 
 func (c *Pair) encryptSPS2() []byte {
-	return c.encryptSPS21(c.pdmCert2)
+	return c.encryptSPS(c.pdmCert2)
 }
 
 func (c *Pair) ParseSPS2(msg *message.Message) any {
@@ -308,10 +308,10 @@ func (c *Pair) ParseSPS2(msg *message.Message) any {
 }
 
 func (c *Pair) decryptSPS22(b []byte) ([]byte, error) {
-	return c.decryptSPS21(b)
+	return c.decryptSPS(b)
 }
 
-func (c *Pair) encryptSPS21(data []byte) []byte {
+func (c *Pair) encryptSPS(data []byte) []byte {
 	nonce := c.nonce13(Write)
 	tagSize := 8
 	aes, _ := aes.NewCipher(c.confKey)
